@@ -10,57 +10,35 @@ var svg = d3.select('.chart')
   .append('g')
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-d3.json('./stocks.json', function (err, data) {
-  var parseTime = d3.timeParse('%Y/%m/%d');
+d3.json('./data2.json', function (err, data) {
 
-  data.forEach(company => {
-    company.values.forEach(d => {
-      d.date = parseTime(d.date);
-      d.close = + d.close;
-    });
-  });
-
-  var xScale = d3.scaleTime()
-    .domain([
-      d3.min(data, co => d3.min(co.values, d => d.date)),
-      d3.max(data, co => d3.max(co.values, d => d.date))
-    ])
+  var xScale = d3.scaleLinear()
+    .domain([0, 100])
     .range([0, width]);
 
   svg
     .append('g')
       .attr('transform', `translate(0, ${height})`)
-    .call(d3.axisBottom(xScale).ticks(5));
+    .call(d3.axisBottom(xScale));
 
   var yScale = d3.scaleLinear()
-    .domain([
-      d3.min(data, co => d3.min(co.values, d => d.close)),
-      d3.max(data, co => d3.max(co.values, d => d.close))
-    ])
+    .domain([0, 100])
     .range([height, 0]);
 
   svg
     .append('g')
     .call(d3.axisLeft(yScale));
 
-  var area = d3.area()
-    .x(d => xScale(d.date))
-    .y0(yScale(yScale.domain()[0]))
-    .y1(d => yScale(d.close));
-    // .curve(d3.curveCatmullRom.alpha(0.5));
-
   svg
-    .selectAll('.area')
+    .selectAll('circle')
     .data(data)
     .enter()
-    .append('path')
-    .attr('class', 'area')
-    .attr('d', d => area(d.values))
-    .style('stroke', (d, i) => ['#FF9900', '#3369E8'][i])
-    .style('stroke-width', 2)
-    .style('fill', (d, i) => ['#FF9900', '#3369E8'][i])
-    .style('fill-opacity', 0.5);
-})
+    .append('circle')
+    .attr('cx', d => xScale(d.x))
+    .attr('cy', d => xScale(d.y))
+    .attr('r', d => d.r)
+    .attr('class', 'ball');
+});
 
 function responsivefy(svg) {
   // get container + svg aspect ratio
@@ -88,3 +66,9 @@ function responsivefy(svg) {
     svg.attr("height", Math.round(targetWidth / aspect));
   }
 }
+
+//$0
+//$0.__data__
+//d3.select($0).attr('r', 50)
+//d3.selectAll('circle').filter(d => d.x < 30).nodes();
+//d3.selectAll('circle').filter(d => d.x < 30).style('stroke', 'red')
